@@ -87,6 +87,63 @@ KMBox NET 硬件外设 → 标准 USB HID 输出
 
 ---
 
+## 硬件设备
+
+### KMBox NET 网络键鼠控制器
+
+研究版客户端 (`video_bridge.py`) 推荐使用 KMBox NET 硬件作为输出设备，实现完全的物理层隔离。
+
+**工作原理:**
+```
+PC (USB网卡) ←→ KMBox NET ←→ 目标设备 (USB HID)
+    ↑ UDP            ↑ 标准USB鼠标协议
+    推理坐标         无驱动痕迹、无进程特征
+```
+
+**核心优势:**
+- 独立 IP/端口/UUID 硬件编码，每台设备唯一特征
+- 支持 VID/PID 随机化，无法通过 USB 特征批量识别
+- 网络通信速度 ~1000次/秒，内置贝塞尔曲线拟人轨迹
+- 无需安装任何驱动，即插即用
+- 协议不公开，阻塞 socket 通信，无法被外部扫描
+
+**购买渠道:**
+- 淘宝搜索 "kmbox Net 网络键鼠控制器"（参考价格 ¥198）
+- 官方文档: https://www.kmbox.top/wiki_doc/kmboxNet/site
+- 注意区分型号: 请选择 **NET 版**（网络 UDP 通信），非 B+/B Pro 版（串口通信）
+
+**配件清单:**
+- KMBox NET 盒子 ×1
+- USB 数据线 ×2（蓝色，分别接网口和游戏机口）
+- 显示屏（显示 IP / Port / UUID）
+
+**首次配置:**
+1. 两条 USB 线缆分别插入 PC（网口线接 PC，游戏机口线接目标电脑；单机则都接同一台）
+2. 插入后我的电脑出现磁盘 → 运行其中 exe 安装网卡驱动
+3. 修改新出现的网卡 IP 为 `192.168.2.x`（与盒子同网段）
+4. `ping 192.168.2.188` 验证连通
+5. 抄下盒子上显示的 **IP / Port / UUID** 三个参数
+6. 将附带光盘中的 `kmNet.cp3xx-win_amd64.pyd` 复制到项目目录，改名 `kmNet.pyd`
+
+**启动命令:**
+```bash
+python video_bridge.py --tunnel \
+    --kmbox-ip 192.168.2.188 \
+    --kmbox-port <盒子显示的端口> \
+    --kmbox-uuid <盒子显示的UUID>
+```
+
+### 无硬件方案
+
+如果暂未购买 KMBox NET，研究版客户端仍可运行推理和可视化部分（鼠标输出功能不可用）：
+
+```bash
+# 推理+雷达可用，鼠标不会移动
+python video_bridge.py --tunnel --show-radar
+```
+
+---
+
 ## 环境要求
 
 ### 本地 PC
